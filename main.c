@@ -9,62 +9,38 @@
 
 
 // Define the structure for a node in the doubly linked list
-struct AssignedNode {
+struct Node {
     char name;        // Key as a string
     int address;          // Address as an integer
     int size;             // Size as an integer
-    void *mallocAddress;  // Malloc address
-    struct AssignedNode* prev;    // Pointer to the previous node
-    struct AssignedNode* next;    // Pointer to the next node
+    struct Node* prev;    // Pointer to the previous node
+    struct Node* next;    // Pointer to the next node
 };
 
-struct UnAssignedNode { 
-    int address;          // Address as an integer
-    int size;             // Size as an integer
-    struct AssignedNode* prev;    // Pointer to the previous node
-    struct AssignedNode* next;    // Pointer to the next node
-};
 
-struct AssignedList {
+struct List {
     int length;   // Malloc address
-    struct AssignedNode* head;    // Pointer to the previous node
-    struct AssignedNode* tail;    // Pointer to the next node
+    struct Node* head;    // Pointer to the previous node
+    struct Node* tail;    // Pointer to the next node
 };
 
-struct UnAssignedList {
-    int length;   // Malloc address
-    struct UnAssignedNode* head;    // Pointer to the previous node
-    struct UnAssignedNode* tail;    // Pointer to the next node
-};
 
-struct AssignedList assignedList = {0, NULL, NULL};
-struct UnAssignedList unAssignedList = {0, NULL, NULL};
+struct List assignedList = {0, NULL, NULL};
+struct List unAssignedList = {0, NULL, NULL};
 // Function to create a new node
-struct AssignedNode* createAssignedNode(char* name, int address, int size, void* mallocAddress) {
-    struct AssignedNode* newAssignedNode = (struct AssignedNode*)malloc(sizeof(struct AssignedNode));
+struct Node* createNode(char* name, int address, int size, void* mallocAddress) {
+    struct Node* newAssignedNode = (struct Node*)malloc(sizeof(struct Node));
     
     strcpy(newAssignedNode->name, name);
     newAssignedNode->address = address;
     newAssignedNode->size = size;
-    newAssignedNode->mallocAddress = mallocAddress;
     newAssignedNode->prev = NULL;
     newAssignedNode->next = NULL;
     
     return newAssignedNode;
 };
 
-struct UnAssignedNode* createUnAssignedNode(int address, int size) {
-    struct UnAssignedNode* newUnAssignedNode = (struct UnAssignedNode*)malloc(sizeof(struct UnAssignedNode));
-    
-    newUnAssignedNode->address = address;
-    newUnAssignedNode->size = size;
-    newUnAssignedNode->prev = NULL;
-    newUnAssignedNode->next = NULL;
-    
-    return newUnAssignedNode;
-};
-
-int compareUnAssignedNode(struct AssignedNode* node1, struct AssignedNode* node2) {
+int compareUnAssignedNode(struct Node* node1, struct Node* node2) {
     if (node1->size < node2->size) {
         return -1;
     } else if (node1->size > node2->size) {
@@ -75,11 +51,11 @@ int compareUnAssignedNode(struct AssignedNode* node1, struct AssignedNode* node2
 }
 
 // Function to insert a node at the end of the doubly linked list
-struct AssignedNode* insertAssigned(char* name, int address, int size, void* mallocAddress) {
-    struct AssignedNode* newAssignedNode = createAssignedNode(name, address, size, mallocAddress);
+struct Node* insertAssigned(char* name, int address, int size, void* mallocAddress) {
+    struct Node* newAssignedNode = createAssignedNode(name, address, size, mallocAddress);
 
     if (assignedList.head != NULL && assignedList.tail != NULL) {
-        struct AssignedNode* compareNode = assignedList.head;
+        struct Node* compareNode = assignedList.head;
         while (compareNode->next){
             if (compareNode->address > newAssignedNode->address) {
                 newAssignedNode->next = compareNode;
@@ -106,7 +82,7 @@ struct AssignedNode* insertAssigned(char* name, int address, int size, void* mal
     return newAssignedNode;
 }
 
-int compareUnAssignedNode(int size, struct UnAssignedNode* node2) {
+int compareUnAssignedNode(int size, struct Node* node2) {
     if (size < node2->size) {
         return -1;
     } else if (size > node2->size) {
@@ -118,10 +94,10 @@ int compareUnAssignedNode(int size, struct UnAssignedNode* node2) {
 
 // Function to insert a node at the end of the doubly linked list
 void insertUnAssigned(int size) {
-    struct UnAssignedNode* newAssignedNode = createUnAssignedNode(0, size);
+    struct Node* newAssignedNode = createUnAssignedNode(0, size);
 
     if (unAssignedList.head != NULL && unAssignedList.tail != NULL) {
-        struct UnAssignedNode* compareNode = unAssignedList.head;
+        struct Node* compareNode = unAssignedList.head;
         while (compareNode->next){
             if (compareUnAssignedNode(size, compareNode)) {
                 newAssignedNode->next = compareNode;
@@ -152,10 +128,10 @@ void insertUnAssigned(int size) {
 
 void insertInHole(char* variable, int size) {
     
-    struct UnAssignedNode* compareNode = unAssignedList.head;
+    struct Node* compareNode = unAssignedList.head;
     while (compareNode){
         if (compareNode->size >= size) {
-            struct AssignedNode* newNode = insertAssigned(variable, compareNode->address, size, malloc(size));
+            struct Node* newNode = insertAssigned(variable, compareNode->address, size, malloc(size));
             compareNode->address += size;
             compareNode->size -= size;
             if (compareNode->size == 0) {
@@ -180,8 +156,8 @@ void insertInHole(char* variable, int size) {
 }
 
 // Function to display the doubly linked list
-void displayList(struct AssignedNode* head) {
-    struct AssignedNode* temp = head;
+void displayList(struct Node* head) {
+    struct Node* temp = head;
 
     while (temp != NULL) {
         printf("AssignedNode - Name: %s, Address: %d, Size: %d, Malloc Address: %p\n", 
@@ -191,8 +167,8 @@ void displayList(struct AssignedNode* head) {
 }
 
 // Function to delete a node by its name
-void deleteAssignedNode(struct AssignedNode** head, char* name) {
-    struct AssignedNode* temp = *head;
+void deleteAssignedNode(struct Node** head, char* name) {
+    struct Node* temp = *head;
 
     while (temp != NULL) {
         if (strcmp(temp->name, name) == 0) {
@@ -210,8 +186,7 @@ void deleteAssignedNode(struct AssignedNode** head, char* name) {
             printf("AssignedNode with name '%s' deleted.\n", name);
             return;
         }
-        temp = temp->next;
-    }
+        temp = temp->next; 
 
     printf("AssignedNode with name '%s' not found.\n", name);
 }
