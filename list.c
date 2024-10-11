@@ -11,24 +11,24 @@ struct Node
     struct Node *next; // Pointer to the next node
 };
 
-// Estructura para la lista que contiene los punteros head y tail
+// Structure for the list that contains head and tail pointers
 struct List
 {
     struct Node *head;
     struct Node *tail;
 };
 
-// Variables globales en list.c
-struct Node *globalNodeMemory = NULL; // Global para manejo de memoria
-struct List *globalList = NULL;       // Lista global
+// Global variables in list.c
+struct Node *globalNodeMemory = NULL; // Global for memory management
+struct List *globalList = NULL;       // Global list
 
-// Función para crear una lista
+// Function to create a list
 struct List *createList()
 {
     globalList = (struct List *)malloc(sizeof(struct List));
     if (globalList == NULL)
     {
-        printf("Error en la asignación de memoria para la lista!\n");
+        printf("Memory allocation error for the list!\n");
         exit(1);
     }
     globalList->head = NULL;
@@ -36,13 +36,13 @@ struct List *createList()
     return globalList;
 }
 
-// Función para crear un nuevo nodo
+// Function to create a new node
 struct Node *createNode(char name, int address, int size)
 {
     globalNodeMemory = (struct Node *)malloc(sizeof(struct Node));
     if (globalNodeMemory == NULL)
     {
-        printf("Error en la asignación de memoria para el nodo!\n");
+        printf("Memory allocation error for the node!\n");
         exit(1);
     }
     globalNodeMemory->name = name;
@@ -53,12 +53,12 @@ struct Node *createNode(char name, int address, int size)
     return globalNodeMemory;
 }
 
-// Función para añadir un valor al final de la lista
+// Function to add a value to the end of the list
 void addValue(struct List *list, char name, int address, int size)
 {
-    struct Node *newNode = createNode(name, address, size); // Crear el nuevo nodo
+    struct Node *newNode = createNode(name, address, size); // Create the new node
 
-    // Si la lista está vacía, el nuevo nodo se convierte en head y tail
+    // If the list is empty, the new node becomes head and tail
     if (list->head == NULL)
     {
         list->head = newNode;
@@ -66,63 +66,63 @@ void addValue(struct List *list, char name, int address, int size)
     }
     else
     {
-        // Enlazar el nuevo nodo al final de la lista
+        // Link the new node to the end of the list
         list->tail->next = newNode;
-        newNode->prev = list->tail; // Establecer el puntero previo del nuevo nodo
-        list->tail = newNode;       // Actualizar la cola
+        newNode->prev = list->tail; // Set the previous pointer of the new node
+        list->tail = newNode;       // Update the tail
     }
 }
 
 void deleteValue(struct List *list, char name)
 {
-    struct Node *current = list->head; // Comenzar desde la cabeza
+    struct Node *current = list->head; // Start from the head
 
-    // Buscar el nodo con el valor especificado
+    // Search for the node with the specified value
     while (current != NULL && current->name != name)
     {
         current = current->next;
     }
 
-    // Si no se encontró el valor
+    // If the value was not found
     if (current == NULL)
     {
-        printf("Valor %d no encontrado en la lista.\n", name);
+        printf("Value %c not found in the list.\n", name);
         return;
     }
 
-    // Si el nodo a eliminar es la cabeza
+    // If the node to delete is the head
     if (current == list->head)
     {
-        list->head = current->next; // Actualizar la cabeza
+        list->head = current->next; // Update the head
 
-        // Si la lista no está vacía, actualizar el puntero prev de la nueva cabeza
+        // If the list is not empty, update the previous pointer of the new head
         if (list->head != NULL)
         {
             list->head->prev = NULL;
         }
     }
-    // Si el nodo a eliminar es la cola
+    // If the node to delete is the tail
     else if (current == list->tail)
     {
-        list->tail = current->prev; // Actualizar la cola
+        list->tail = current->prev; // Update the tail
         list->tail->next = NULL;
     }
-    // Si el nodo está en el medio
+    // If the node is in the middle
     else
     {
         current->prev->next = current->next;
         current->next->prev = current->prev;
     }
 
-    // Liberar la memoria del nodo eliminado
+    // Free the memory of the deleted node
     free(current);
-    printf("Valor %d eliminado de la lista.\n", name);
+    printf("Value %c removed from the list.\n", name);
 }
 
-// Función para imprimir los valores de la lista (recorrido hacia adelante)
+// Function to print the values of the list (forward traversal)
 void printList(struct List *list)
 {
-    struct Node *temp = list->head; // Variable local para recorrer la lista
+    struct Node *temp = list->head; // Local variable to traverse the list
     printf("Forward: ");
     while (temp != NULL)
     {
@@ -132,14 +132,14 @@ void printList(struct List *list)
     printf("NULL\n");
 }
 
-// Función para imprimir los valores de la lista (recorrido hacia atrás)
+// Function to print the values of the list (backward traversal)
 void printListReverse(struct List *list)
 {
-    struct Node *temp = list->tail; // Variable local para recorrer la lista desde el final
+    struct Node *temp = list->tail; // Local variable to traverse the list from the end
     printf("Backward: ");
     while (temp != NULL)
     {
-        printf("%d -> ", temp->name, temp->address, temp->size);
+        printf("%c -> ", temp->name, temp->address, temp->size);
         temp = temp->prev;
     }
     printf("NULL\n");

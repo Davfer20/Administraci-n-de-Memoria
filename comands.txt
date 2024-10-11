@@ -1,10 +1,10 @@
-# Simulación de f ragmen tación
+# Simulacion de fragmentacion
 ALLOC A 100
 ALLOC B 200
 FREE A
 ALLOC C 50
 PRINT
-# Simulación de fuga de memoria
+# Simulacion de fuga de memoria
 ALLOC D 300
 ALLOC E 400
 # No libe ramos D
