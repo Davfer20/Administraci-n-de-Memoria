@@ -35,6 +35,7 @@ void processLine(const char *line)
     if (strcmp(command, "FREE") == 0)
     {
       printf("Function FREE with: %s, %c\n", command, name);
+      freeMemory(name);
       // Implementa la función de FREE aquí
     }
   }
@@ -89,7 +90,25 @@ int main(int argc)
   allocateMemory('C', 30);
   allocateMemory('D', 40);
   allocateMemory('E', 100);
+
+  freeMemory('D');
+  freeMemory('B');
+
+  printf("Assigned list:\n");
   printList(assignedList);
+
+  printf("Unasinged  list:\n");
+
+  printList(unassignedList);
+
+  allocateMemory('G', 20);
+
+  printf("Assigned list:\n");
+  printList(assignedList);
+
+  printf("Unasinged  list:\n");
+
+  printList(unassignedList);
 
   // readLinesFromFile("comands.txt");
   return 0;

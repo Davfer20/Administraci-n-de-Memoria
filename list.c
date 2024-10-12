@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MEMORY_SIZE 1024
+#define MEMORY_SIZE 1000
 
 // Structure for the node that contains the key and the value
 struct Node
@@ -38,6 +38,7 @@ static struct List *createList(struct List **list)
     (*list)->tail = NULL;
     return *list;
 }
+
 // Function to create a new node
 static struct Node *createNode(char name, int adress, int size)
 {
@@ -55,6 +56,48 @@ static struct Node *createNode(char name, int adress, int size)
     newNode->next = NULL;
     newNode->prev = NULL;
     return newNode;
+}
+
+static void sortListByAddress(struct List *list)
+{
+    if (list->head == NULL)
+    {
+        return; // Empty list, nothing to sort
+    }
+
+    int swapped;
+    struct Node *current;
+    struct Node *last = NULL; // End of the list
+
+    do
+    {
+        swapped = 0;
+        current = list->head;
+
+        while (current->next != last) // While the current node is not the last node
+        {
+            if (current->address > current->next->address)
+            {
+                // Exchange values between adjacent nodes
+                char tempName = current->name;
+                int tempAddress = current->address;
+                int tempSize = current->size;
+
+                // Exchange the values of the nodes
+                current->name = current->next->name;
+                current->address = current->next->address;
+                current->size = current->next->size;
+
+                current->next->name = tempName;
+                current->next->address = tempAddress;
+                current->next->size = tempSize;
+
+                swapped = 1; // Indicate that a swap was made
+            }
+            current = current->next;
+        }
+        last = current; // Update the last node
+    } while (swapped);
 }
 
 // Function to add a value to the end of the list
@@ -75,56 +118,107 @@ static void addValue(struct List *list, char name, int address, int size)
         newNode->prev = list->tail; // Set the previous pointer of the new node
         list->tail = newNode;       // Update the tail
     }
+    sortListByAddress(list); // Sort the list by address
 }
 
 // Function to delete a value from the list
-static void deleteValue(struct List *list, char name)
+static void deleteNode(struct List *list, struct Node *nodeToDelete)
 {
-    struct Node *current = list->head; // Start from the head
-
-    // Search for the node with the specified value
-    while (current != NULL && current->name != name)
+    // Validar si el nodo a eliminar es NULL
+    if (nodeToDelete == NULL)
     {
-        current = current->next;
+        printf("El nodo a eliminar no es válido.\n");
+        return;
     }
 
-    // If the value was not found
-    if (current == NULL)
+    // Si el nodo a eliminar es el head
+    if (nodeToDelete == list->head)
     {
-        printf("Value %c not found in the list.\n", name);
-    }
+        list->head = nodeToDelete->next; // Actualizar el head
 
-    // If the node to delete is the head
-    if (current == list->head)
-    {
-        list->head = current->next; // Update the head
-
-        // If the list is not empty, update the previous pointer of the new head
+        // Si la lista no está vacía, actualizar el puntero prev del nuevo head
         if (list->head != NULL)
         {
             list->head->prev = NULL;
         }
     }
-    // If the node to delete is the tail
-    else if (current == list->tail)
+    // Si el nodo a eliminar es el tail
+    else if (nodeToDelete == list->tail)
     {
-        list->tail = current->prev; // Update the tail
-        list->tail->next = NULL;
+        list->tail = nodeToDelete->prev; // Actualizar el tail
+        if (list->tail != NULL)
+        {
+            list->tail->next = NULL; // Asegurarse de que el nuevo tail no tenga next
+        }
     }
-    // If the node is in the middle
+    // Si el nodo está en medio
     else
     {
-        current->prev->next = current->next;
-        current->next->prev = current->prev;
+        nodeToDelete->prev->next = nodeToDelete->next;
+        nodeToDelete->next->prev = nodeToDelete->prev;
     }
 }
+// Function to sort the list by address
 
-// Función para asignar memoria
+static void bestFit(char name, int size, int freeMemory)
+{
+    // Here the parameter size is the size of the memory to be allocated
+    struct Node *bestFitNode = NULL;
+    struct Node *unassignedNode = unassignedList->head;
+
+    // Recorrer la lista de no asignados para encontrar el mejor ajuste
+    while (unassignedNode != NULL)
+    {
+        // Verificar si el tamaño del nodo no asignado es suficiente
+        if (unassignedNode->size >= size)
+        {
+            // Si es la primera coincidencia o si es mejor que el anterior mejor ajuste
+            if (bestFitNode == NULL || unassignedNode->size < bestFitNode->size)
+            {
+                bestFitNode = unassignedNode; // Actualizar el mejor ajuste
+            }
+        }
+        unassignedNode = unassignedNode->next; // Ir al siguiente nodo no asignado
+    }
+
+    // Si no se encontró un hueco adecuado
+    if (bestFitNode == NULL && freeMemory >= size)
+    {
+        // Adds the value to the end of the list
+        struct Node *lastAssigned = assignedList->tail;
+        addValue(assignedList, name, lastAssigned->address + lastAssigned->size, size);
+        return;
+    }
+
+    addValue(assignedList, name, bestFitNode->address, size);
+
+    bestFitNode->address += size;
+    bestFitNode->size -= size;
+
+    printf("Size bestNode", bestFitNode->size);
+    if (bestFitNode->size == 0)
+    {
+        deleteNode(unassignedList, bestFitNode);
+    }
+
+    printf("Memoria asignada a %c en la direccion %d con el tamano %d.\n", name, bestFitNode->address - size, size);
+}
+
+static void wortsFit(char name, int size)
+{
+}
+
+static void firstFit(char name, int size)
+{
+}
+
+// Function to allocate memory
 static void allocateMemory(char name, int size)
 {
-    // Caso si no hay agujeros en la memoria
+    // Case if there is holes con memory
     if (unassignedList == NULL || unassignedList->head == NULL)
     {
+        // Falta validar cuando esta llena la memoria
         if (assignedList == NULL || assignedList->head == NULL)
         {
             addValue(assignedList, name, 0, size);
@@ -137,44 +231,35 @@ static void allocateMemory(char name, int size)
             return; // Termina la función
         }
     }
+    // Case if there are holes in memory
+    else
+    {
+        // Know the free memory in the list
+        struct Node *lastAssigned = assignedList->tail;
+        int freeMemory = (MEMORY_SIZE - (lastAssigned->address + lastAssigned->size));
+        printf("Memoria libre: %d\n", freeMemory);
 
-    // struct Node *unassignedNode = unassignedList->head;
-    // while (unassignedNode != NULL)
-    // {
-    //     // Verificar si el tamaño del nodo no asignado es suficiente
-    //     if (unassignedNode->size >= node->size)
-    //     {
-    //         // Asignar la dirección de memoria
-    //         node->address = unassignedNode->address; // Asignar dirección
-    //         // Marcar la memoria como ocupada en simulatedMemory
-    //         memset(&simulatedMemory[node->address], 1, node->size); // Marcar como ocupada (puedes usar otro valor si es necesario)
-    //         // Eliminar el nodo de unassignedList
-    //         deleteValue(unassignedList, unassignedNode->name);
-    //         // Agregar el nodo a assignedList
-    //         addValue(assignedList, node->name, node->address, node->size);
-    //         printf("Memoria asignada a %c en la dirección %d.\n", node->name, node->address);
-    //         return; // Termina la función
-    //     }
-    //     unassignedNode = unassignedNode->next; // Ir al siguiente nodo no asignado
-    // }
+        // Call the type of memory allocation
+        bestFit(name, size, freeMemory);
+    }
 }
 
 // Function to free memory
-static void freeMemory(struct Node *node)
+static void freeMemory(char name)
 {
     struct Node *current = assignedList->head;
     while (current != NULL)
     {
-        if (current->name == node->name)
+        if (current->name == name)
         {
-            // Liberar la memoria en el array simulado
-            memset(&simulatedMemory[current->address], 0, current->size);
-            deleteValue(assignedList, node->name); // Eliminar de la lista
-            printf("Memoria liberada para %c.\n", node->name);
+            // Free the memory from the simulated memory
+            addValue(unassignedList, '0', current->address, current->size);
+
+            printf("Memoria liberada para %c.\n", current->name);
+            deleteNode(assignedList, current); // Eliminar de la lista
         }
         current = current->next;
     }
-    printf("No se encontró memoria asignada para %c.\n", node->name);
 }
 
 // Function to print the values of the list (forward traversal)
