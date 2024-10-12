@@ -3,64 +3,54 @@
 #include <string.h>
 #include "list.c"
 
-#define MEMORY_SIZE 1024
-
-struct MemoryManager
-{
-  struct Node *head;        // Pointer to the start of the list
-  char memory[MEMORY_SIZE]; // Simulated memory
-};
-
-// Initializes the memory manager
-void initialize_memory_manager(struct MemoryManager *manager)
-{
-  manager->head = NULL;                    // Initialize the head of the list to NULL
-  memset(manager->memory, 0, MEMORY_SIZE); // Initialize memory to 0
-}
-
+// Function to process each line
 void processLine(const char *line)
 {
-  char command[10], name[10];
-  size_t size;
+  char command[10]; // Buffer para almacenar el comando
+  char name;        // Variable para el nombre (carácter)
+  size_t size;      // Variable para el tamaño
 
-  // Parse line
-  if (sscanf(line, "%s %s %zu", command, name, &size) == 3)
+  // Parse the line (con ALLOC, MALLOC, REALLOC)
+  if (sscanf(line, "%s %c %zu", command, &name, &size) == 3) // Usa &name para pasar la dirección de name
   {
     if (strcmp(command, "ALLOC") == 0)
     {
-      printf("Function ALLOC with: %s, %s, %zu\n", command, name, size);
-      // Call the memory allocation function here.
+      printf("Function ALLOC with: %s, %c, %zu\n", command, name, size);
+      // allocateMemory(name, size);
     }
     else if (strcmp(command, "MALLOC") == 0)
     {
-      printf("Function MALLOC with: %s, %s, %zu\n", command, name, size);
-      // Call the specific function here.
+      printf("Function MALLOC with: %s, %c, %zu\n", command, name, size);
+      // Implementa la función de MALLOC aquí
     }
     else if (strcmp(command, "REALLOC") == 0)
     {
-      printf("Function REALLOC with: %s, %s, %zu\n", command, name, size);
-      // Call the specific function here.
+      printf("Function REALLOC with: %s, %c, %zu\n", command, name, size);
+      // Implementa la función de REALLOC aquí
     }
   }
-  else if (sscanf(line, "%s %s", command, name) == 2)
+  // Parse the line for FREE (no incluye tamaño)
+  else if (sscanf(line, "%s %c", command, &name) == 2)
   {
     if (strcmp(command, "FREE") == 0)
     {
-      printf("Function FREE with: %s, %s\n", command, name);
-      // Call the specific function here.
+      printf("Function FREE with: %s, %c\n", command, name);
+      // Implementa la función de FREE aquí
     }
   }
+  // Caso de PRINT que no requiere más argumentos
   else if (strcmp(command, "PRINT") == 0)
   {
     printf("Function PRINT with: %s\n", command);
-    // Call the specific function here.
+    // Implementa la función de imprimir aquí
   }
   else
   {
-    printf("Invalid command\n");
+    printf("Invalid command: %s\n", line); // Mensaje de error si el comando no es válido
   }
 }
 
+// Function to read lines from a file
 void readLinesFromFile(const char *filename)
 {
   FILE *file = fopen(filename, "r");
@@ -70,43 +60,37 @@ void readLinesFromFile(const char *filename)
     exit(EXIT_FAILURE);
   }
 
-  char line[50]; // Buffer to store each line
+  char line[50]; // Buffer para almacenar cada línea
 
-  // Read line by line from the file
+  // Leer línea por línea del archivo
   while (fgets(line, sizeof(line), file))
   {
-
     if (line[0] == '#')
     {
-      continue; // Ignore comments
+      continue; // Ignorar comentarios
     }
 
     printf("Processing line: %s\n", line);
-
-    processLine(line); // Process the line
+    processLine(line); // Procesar la línea
   }
 
-  fclose(file); // Close the file
+  fclose(file); // Cerrar el archivo
 }
 
-int main()
+int main(int argc)
 {
-  struct MemoryManager manager;
-  initialize_memory_manager(&manager);
 
-  struct List *memoryList = createList(); // Create the list that stores what is in memory
+  // Create global lists
+  createList(&assignedList);
+  createList(&unassignedList);
 
-  // Uncomment to add values to the list
-  // addValue(myList, 'A', 10, 30);
-  // addValue(myList, 'B', 10, 30);
-  // addValue(myList, 'E', 130, 10);
-  // addValue(myList, 'Q', 150, 60);
-  // addValue(myList, 'U', 10, 30);
-  // Uncomment to print the list in order
-  // printList(myList);
-  // deleteValue(myList, 'E');
-  // printList(myList);
+  allocateMemory('A', 10);
+  allocateMemory('B', 20);
+  allocateMemory('C', 30);
+  allocateMemory('D', 40);
+  allocateMemory('E', 100);
+  printList(assignedList);
 
-  // readLinesFromFile(argv[1]); // Reads the file specified as an argument
-  readLinesFromFile("comands.txt");
+  // readLinesFromFile("comands.txt");
+  return 0;
 }

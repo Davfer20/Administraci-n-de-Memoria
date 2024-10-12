@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MEMORY_SIZE 1024
 
+// Structure for the node that contains the key and the value
 struct Node
 {
     char name;         // Key as a string
@@ -19,42 +21,44 @@ struct List
 };
 
 // Global variables in list.c
-struct Node *globalNodeMemory = NULL; // Global for memory management
-struct List *globalList = NULL;       // Global list
+static char simulatedMemory[MEMORY_SIZE];
+static struct List *assignedList = NULL;
+static struct List *unassignedList = NULL;
 
-// Function to create a list
-struct List *createList()
+// Function to create a new list
+static struct List *createList(struct List **list)
 {
-    globalList = (struct List *)malloc(sizeof(struct List));
-    if (globalList == NULL)
+    *list = (struct List *)malloc(sizeof(struct List));
+    if (*list == NULL)
     {
-        printf("Memory allocation error for the list!\n");
+        printf("Error de asignación de memoria para la lista!\n");
         exit(1);
     }
-    globalList->head = NULL;
-    globalList->tail = NULL;
-    return globalList;
+    (*list)->head = NULL;
+    (*list)->tail = NULL;
+    return *list;
 }
-
 // Function to create a new node
-struct Node *createNode(char name, int address, int size)
+static struct Node *createNode(char name, int adress, int size)
 {
-    globalNodeMemory = (struct Node *)malloc(sizeof(struct Node));
-    if (globalNodeMemory == NULL)
+    // Allocate memory for the new node
+    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
+    if (newNode == NULL)
     {
-        printf("Memory allocation error for the node!\n");
+        printf("Error de asignación de memoria para el nodo!\n");
         exit(1);
     }
-    globalNodeMemory->name = name;
-    globalNodeMemory->address = address;
-    globalNodeMemory->size = size;
-    globalNodeMemory->next = NULL;
-    globalNodeMemory->prev = NULL;
-    return globalNodeMemory;
+    // Initialize the new node
+    newNode->name = name;
+    newNode->address = adress; // No address assigned yet
+    newNode->size = size;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+    return newNode;
 }
 
 // Function to add a value to the end of the list
-void addValue(struct List *list, char name, int address, int size)
+static void addValue(struct List *list, char name, int address, int size)
 {
     struct Node *newNode = createNode(name, address, size); // Create the new node
 
@@ -73,7 +77,8 @@ void addValue(struct List *list, char name, int address, int size)
     }
 }
 
-void deleteValue(struct List *list, char name)
+// Function to delete a value from the list
+static void deleteValue(struct List *list, char name)
 {
     struct Node *current = list->head; // Start from the head
 
@@ -87,7 +92,6 @@ void deleteValue(struct List *list, char name)
     if (current == NULL)
     {
         printf("Value %c not found in the list.\n", name);
-        return;
     }
 
     // If the node to delete is the head
@@ -113,34 +117,74 @@ void deleteValue(struct List *list, char name)
         current->prev->next = current->next;
         current->next->prev = current->prev;
     }
+}
 
-    // Free the memory of the deleted node
-    free(current);
-    printf("Value %c removed from the list.\n", name);
+// Función para asignar memoria
+static void allocateMemory(char name, int size)
+{
+    // Caso si no hay agujeros en la memoria
+    if (unassignedList == NULL || unassignedList->head == NULL)
+    {
+        if (assignedList == NULL || assignedList->head == NULL)
+        {
+            addValue(assignedList, name, 0, size);
+            return; // Termina la función, no es necesario retornar un valor
+        }
+        else
+        {
+            struct Node *lastAssigned = assignedList->tail; // Obtener el último nodo asignado
+            addValue(assignedList, name, lastAssigned->address + lastAssigned->size, size);
+            return; // Termina la función
+        }
+    }
+
+    // struct Node *unassignedNode = unassignedList->head;
+    // while (unassignedNode != NULL)
+    // {
+    //     // Verificar si el tamaño del nodo no asignado es suficiente
+    //     if (unassignedNode->size >= node->size)
+    //     {
+    //         // Asignar la dirección de memoria
+    //         node->address = unassignedNode->address; // Asignar dirección
+    //         // Marcar la memoria como ocupada en simulatedMemory
+    //         memset(&simulatedMemory[node->address], 1, node->size); // Marcar como ocupada (puedes usar otro valor si es necesario)
+    //         // Eliminar el nodo de unassignedList
+    //         deleteValue(unassignedList, unassignedNode->name);
+    //         // Agregar el nodo a assignedList
+    //         addValue(assignedList, node->name, node->address, node->size);
+    //         printf("Memoria asignada a %c en la dirección %d.\n", node->name, node->address);
+    //         return; // Termina la función
+    //     }
+    //     unassignedNode = unassignedNode->next; // Ir al siguiente nodo no asignado
+    // }
+}
+
+// Function to free memory
+static void freeMemory(struct Node *node)
+{
+    struct Node *current = assignedList->head;
+    while (current != NULL)
+    {
+        if (current->name == node->name)
+        {
+            // Liberar la memoria en el array simulado
+            memset(&simulatedMemory[current->address], 0, current->size);
+            deleteValue(assignedList, node->name); // Eliminar de la lista
+            printf("Memoria liberada para %c.\n", node->name);
+        }
+        current = current->next;
+    }
+    printf("No se encontró memoria asignada para %c.\n", node->name);
 }
 
 // Function to print the values of the list (forward traversal)
-void printList(struct List *list)
+static void printList(struct List *list)
 {
     struct Node *temp = list->head; // Local variable to traverse the list
-    printf("Forward: ");
+    printf("Memoria asignada: \n");
     while (temp != NULL)
     {
-        printf("%c %d %d ->", temp->name, temp->address, temp->size);
+        printf("Nombre: %c, Desde: %d, Hasta: %d\n", temp->name, temp->address, temp->address + temp->size);
         temp = temp->next;
     }
-    printf("NULL\n");
-}
-
-// Function to print the values of the list (backward traversal)
-void printListReverse(struct List *list)
-{
-    struct Node *temp = list->tail; // Local variable to traverse the list from the end
-    printf("Backward: ");
-    while (temp != NULL)
-    {
-        printf("%c -> ", temp->name, temp->address, temp->size);
-        temp = temp->prev;
-    }
-    printf("NULL\n");
 }

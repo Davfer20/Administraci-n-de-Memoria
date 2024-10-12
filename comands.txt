@@ -1,12 +1,12 @@
 # Simulacion de fragmentacion
 ALLOC A 100
-ALLOC B 200
-FREE A
-ALLOC C 50
-PRINT
-# Simulacion de fuga de memoria
-ALLOC D 300
-ALLOC E 400
-# No libe ramos D
-FREE E
-PRINT
+#ALLOC B 200
+#FREE A
+#ALLOC C 50
+#PRINT
+## Simulacion de fuga de memoria
+#ALLOC D 300
+#ALLOC E 400
+## No libe ramos D
+#FREE E
+#PRINT
