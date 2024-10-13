@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MEMORY_SIZE 1000
+#define MEMORY_SIZE 200
+#define SORTING_ALGORITHM 3 // 1: First Fit, 2: Best Fit, 3: Worst Fit, 
 
 // Structure for the node that contains the key and the value
 struct Node
@@ -38,6 +39,25 @@ static struct List *createList(struct List **list)
     (*list)->tail = NULL;
     return *list;
 }
+// Function to print the values of the list (forward traversal)
+static void printList(struct List *list)
+{
+    struct Node *temp = list->head; // Local variable to traverse the list
+    printf("Memoria asignada: \n");
+    while (temp != NULL)
+    {
+        printf("Nombre: %c, Desde: %d, Hasta: %d\n", temp->name, temp->address, temp->address + temp->size);
+        temp = temp->next;
+    }
+}
+
+static void startMemory()
+{
+    for (int i = 0; i < MEMORY_SIZE; i++)
+    {
+        simulatedMemory[i] = '0';
+    }
+}
 
 // Function to create a new node
 static struct Node *createNode(char name, int adress, int size)
@@ -58,50 +78,121 @@ static struct Node *createNode(char name, int adress, int size)
     return newNode;
 }
 
-static void sortListByAddress(struct List *list)
-{
-    if (list->head == NULL)
-    {
-        return; // Empty list, nothing to sort
+// Function to split the doubly linked list into two halves
+struct Node* split(struct Node *head) {
+    struct Node *fast = head, *slow = head;
+
+    while (fast->next && fast->next->next) {
+        fast = fast->next->next;
+        slow = slow->next;
     }
 
-    int swapped;
-    struct Node *current;
-    struct Node *last = NULL; // End of the list
+    struct Node *second_half = slow->next;
+    slow->next = NULL;
+    if (second_half)
+        second_half->prev = NULL;
 
-    do
-    {
-        swapped = 0;
-        current = list->head;
+    return second_half;
+}
 
-        while (current->next != last) // While the current node is not the last node
-        {
-            if (current->address > current->next->address)
-            {
-                // Exchange values between adjacent nodes
-                char tempName = current->name;
-                int tempAddress = current->address;
-                int tempSize = current->size;
-
-                // Exchange the values of the nodes
-                current->name = current->next->name;
-                current->address = current->next->address;
-                current->size = current->next->size;
-
-                current->next->name = tempName;
-                current->next->address = tempAddress;
-                current->next->size = tempSize;
-
-                swapped = 1; // Indicate that a swap was made
-            }
-            current = current->next;
+// Your compareNodes function adjusted to return -1, 0, or 1
+static int compareNodes(struct List* list, struct Node *node1, struct Node *node2) {
+    if (list == assignedList) {
+        // Compare addresses
+        if (node1->address < node2->address)
+            return -1;
+        else if (node1->address > node2->address)
+            return 1;
+        else
+            return 0;
+    } else {
+        switch (SORTING_ALGORITHM) {
+            case 1: // First Fit
+                if (node1->address < node2->address)
+                    return -1;
+                else if (node1->address > node2->address)
+                    return 1;
+                else
+                    return 0;
+            case 2: // Best Fit
+                if (node1->size < node2->size)
+                    return -1;
+                else if (node1->size > node2->size)
+                    return 1;
+                else
+                    return 0;
+            case 3: // Worst Fit
+                if (node1->size > node2->size)
+                    return -1;
+                else if (node1->size < node2->size)
+                    return 1;
+                else
+                    return 0;
+            default:
+                return 0;
         }
-        last = current; // Update the last node
-    } while (swapped);
+    }
+}
+
+// Function to merge two sorted doubly linked lists
+struct Node* merge(struct List* list, struct Node *first, struct Node *second) {
+    // If first linked list is empty
+    if (!first)
+        return second;
+
+    // If second linked list is empty
+    if (!second)
+        return first;
+
+    // Compare the nodes using compareNodes
+    if (compareNodes(list, first, second) <= 0) {
+        first->next = merge(list, first->next, second);
+        if (first->next)
+            first->next->prev = first;
+        first->prev = NULL;
+        return first;
+    } else {
+        second->next = merge(list, first, second->next);
+        if (second->next)
+            second->next->prev = second;
+        second->prev = NULL;
+        return second;
+    }
+}
+
+// Function to perform merge sort on the doubly linked list
+struct Node* mergeSort(struct List* list, struct Node *head) {
+    if (!head || !head->next)
+        return head;
+
+    // Split the list into two halves
+    struct Node *second = split(head);
+
+    // Recursively sort the sublists
+    head = mergeSort(list, head);
+    second = mergeSort(list, second);
+
+    // Merge the sorted halves
+    return merge(list, head, second);
+}
+
+// Function to sort the entire list and update head and tail pointers
+void sortList(struct List *list) {
+    if (!list->head)
+        return;
+
+    // Sort the list starting from head
+    list->head = mergeSort(list, list->head);
+
+    // Update the tail pointer
+    struct Node *temp = list->head;
+    while (temp->next)
+        temp = temp->next;
+    list->tail = temp;
 }
 
 // Function to add a value to the end of the list
-static void addValue(struct List *list, char name, int address, int size)
+static struct Node* addValue(struct List *list, char name, int address, int size)
 {
     struct Node *newNode = createNode(name, address, size); // Create the new node
 
@@ -118,7 +209,8 @@ static void addValue(struct List *list, char name, int address, int size)
         newNode->prev = list->tail; // Set the previous pointer of the new node
         list->tail = newNode;       // Update the tail
     }
-    sortListByAddress(list); // Sort the list by address
+    sortList(list);
+    return newNode;
 }
 
 // Function to delete a value from the list
@@ -159,88 +251,167 @@ static void deleteNode(struct List *list, struct Node *nodeToDelete)
     }
 }
 // Function to sort the list by address
-
-static void bestFit(char name, int size, int freeMemory)
+static signed int findHole(char name, int size)
 {
     // Here the parameter size is the size of the memory to be allocated
-    struct Node *bestFitNode = NULL;
+    struct Node *holeNode = NULL;
     struct Node *unassignedNode = unassignedList->head;
 
-    // Recorrer la lista de no asignados para encontrar el mejor ajuste
+    // Recorrer la lista de no asignados para encontrar un nodo donde quepa el valor
     while (unassignedNode != NULL)
     {
         // Verificar si el tamaño del nodo no asignado es suficiente
         if (unassignedNode->size >= size)
         {
-            // Si es la primera coincidencia o si es mejor que el anterior mejor ajuste
-            if (bestFitNode == NULL || unassignedNode->size < bestFitNode->size)
-            {
-                bestFitNode = unassignedNode; // Actualizar el mejor ajuste
-            }
+            holeNode = unassignedNode; // Si el nodo cabe, se asigna a ese nodo.
+            break;
         }
         unassignedNode = unassignedNode->next; // Ir al siguiente nodo no asignado
     }
 
     // Si no se encontró un hueco adecuado
-    if (bestFitNode == NULL && freeMemory >= size)
+    if (holeNode == NULL)
     {
-        // Adds the value to the end of the list
-        struct Node *lastAssigned = assignedList->tail;
-        addValue(assignedList, name, lastAssigned->address + lastAssigned->size, size);
-        return;
+        // Ni hay espacio suficiente
+        printf("No hay espacio contiguo suficiente para asignar memoria a %c.\n", name);
+        return -1;
     }
 
-    addValue(assignedList, name, bestFitNode->address, size);
+    addValue(assignedList, name, holeNode->address, size);
+    int address = holeNode->address;
+    holeNode->address += size;
+    holeNode->size -= size;
 
-    bestFitNode->address += size;
-    bestFitNode->size -= size;
-
-    printf("Size bestNode", bestFitNode->size);
-    if (bestFitNode->size == 0)
+    printf("Size holeNode", holeNode->size);
+    if (holeNode->size == 0)
     {
-        deleteNode(unassignedList, bestFitNode);
+        deleteNode(unassignedList, holeNode);
     }
 
-    printf("Memoria asignada a %c en la direccion %d con el tamano %d.\n", name, bestFitNode->address - size, size);
-}
-
-static void wortsFit(char name, int size)
-{
-}
-
-static void firstFit(char name, int size)
-{
+    printf("Memoria asignada a %c en la direccion %d con el tamano %d.\n", name, holeNode->address - size, size);
+    return address;
 }
 
 // Function to allocate memory
 static void allocateMemory(char name, int size)
 {
-    // Case if there is holes con memory
+    // Case if there are no holes on memory
     if (unassignedList == NULL || unassignedList->head == NULL)
     {
-        // Falta validar cuando esta llena la memoria
-        if (assignedList == NULL || assignedList->head == NULL)
-        {
-            addValue(assignedList, name, 0, size);
-            return; // Termina la función, no es necesario retornar un valor
-        }
-        else
-        {
-            struct Node *lastAssigned = assignedList->tail; // Obtener el último nodo asignado
-            addValue(assignedList, name, lastAssigned->address + lastAssigned->size, size);
-            return; // Termina la función
-        }
+        printf("No hay espacio contiguo suficiente para asignar memoria a %c.\n", name);
     }
     // Case if there are holes in memory
     else
     {
         // Know the free memory in the list
         struct Node *lastAssigned = assignedList->tail;
-        int freeMemory = (MEMORY_SIZE - (lastAssigned->address + lastAssigned->size));
-        printf("Memoria libre: %d\n", freeMemory);
 
         // Call the type of memory allocation
-        bestFit(name, size, freeMemory);
+        signed int address = findHole(name, size);
+        if (address != -1)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                simulatedMemory[address + i] = name;
+            }
+        } else {
+            printf("No hay espacio contiguo suficiente para asignar memoria a %c.\n", name);
+        }
+    }
+}
+
+static void mergeMemory(struct Node *current){
+    printf("Unassigned list:\n");
+
+    printList(unassignedList);   
+    struct Node *afterHoleNode = NULL;
+    struct Node *beforeHoleNode = NULL;
+    struct Node *unassignedNode = unassignedList->head;
+    while (unassignedNode != NULL) {
+        if (unassignedNode->address == (current->address + current->size)) {
+            afterHoleNode = unassignedNode;
+        } else if (current->address == (unassignedNode->address + unassignedNode->size)) {
+            beforeHoleNode = unassignedNode;
+        }
+        unassignedNode = unassignedNode->next;
+    }
+    if (afterHoleNode != NULL && beforeHoleNode != NULL) {
+        beforeHoleNode->size = current->size + afterHoleNode->size + beforeHoleNode->size;
+        deleteNode(unassignedList, afterHoleNode);
+        deleteNode(unassignedList, current);
+    } else if (afterHoleNode != NULL) {
+        current->size = current->size + afterHoleNode->size;
+        deleteNode(unassignedList, afterHoleNode);
+    } else if (beforeHoleNode != NULL) {
+        beforeHoleNode->size = current->size + beforeHoleNode->size;
+        deleteNode(unassignedList, current);
+    }
+}
+
+// Function to reallocate memory
+static void reallocateMemory(char name, int newSize)
+{
+    struct Node *current = assignedList->head;
+    while (current != NULL)
+    {
+        if (current->name == name)
+        {
+            // Hay cinco casos posibles:
+            
+            struct Node *afterHoleNode = NULL;
+            struct Node *beforeHoleNode = NULL;
+            struct Node *unassignedNode = unassignedList->tail;
+            while (unassignedNode != NULL) {
+                // 1. Hay un hueco después de la asignación del cual se le puede asignar más memoria
+                if (unassignedNode->address == (current->address + current->size)) {
+                    afterHoleNode = unassignedNode;
+                    if (newSize <= (unassignedNode->size + current->size)) {
+                        int remainderSize = newSize - current->size;
+                        current->size =  newSize;
+                        unassignedNode->size -= remainderSize;
+                        unassignedNode->address += remainderSize;
+                        if (unassignedNode->size == 0)
+                        {
+                            deleteNode(unassignedList, unassignedNode);
+                        }
+                        
+                    } 
+                // 2. Hay un hueco antes de la asignación del cual se le puede asignar más memoria
+                // Cambiar a que el espacio reasignado empiece desde el hueco y el address del hueco se mueve
+                } else if (current->address == (unassignedNode->address + unassignedNode->size)) {
+                    afterHoleNode = unassignedNode;
+                    if (newSize <= (unassignedNode->size + current->size)) {
+                        int remainderSize = newSize - current->size;
+                        current->size =  newSize;
+                        unassignedNode->size -= remainderSize;
+                        unassignedNode->address += remainderSize;
+                        if (unassignedNode->size == 0)
+                        {
+                            deleteNode(unassignedList, unassignedNode);
+                        }
+                    } 
+                } 
+                unassignedNode = unassignedNode->next;
+            }
+            
+
+            // 3. Hay huecos antes y después de la asignación de los cuales se le puede asignar más memoria
+
+            // 4. El espacio alrededor del nodo asignado está no es suficiente para la reasignación, entonces se tiene que mover a otro lado. 
+
+            // 5. En todo ningún lado de la memoria hay campo.
+            // Da error
+            // Se busca el hueco
+            struct Node * newUnassignedNode = addValue(unassignedList, '0', current->address, current->size);
+            mergeMemory(newUnassignedNode);
+            printf("Memoria liberada para %c.\n", current->name);
+            for (int i = 0; i < current->size; i++)
+            {
+                simulatedMemory[current->address + i] = '0';
+            }
+            deleteNode(assignedList, current); // Eliminar de la lista
+        }
+        current = current->next;
     }
 }
 
@@ -252,24 +423,26 @@ static void freeMemory(char name)
     {
         if (current->name == name)
         {
-            // Free the memory from the simulated memory
-            addValue(unassignedList, '0', current->address, current->size);
-
+            struct Node * newUnassignedNode = addValue(unassignedList, '0', current->address, current->size);
+            mergeMemory(newUnassignedNode);
             printf("Memoria liberada para %c.\n", current->name);
+            for (int i = 0; i < current->size; i++)
+            {
+                simulatedMemory[current->address + i] = '0';
+            }
             deleteNode(assignedList, current); // Eliminar de la lista
+            return;
+        } else {
+            current = current->next;
         }
-        current = current->next;
     }
 }
 
-// Function to print the values of the list (forward traversal)
-static void printList(struct List *list)
-{
-    struct Node *temp = list->head; // Local variable to traverse the list
-    printf("Memoria asignada: \n");
-    while (temp != NULL)
+static void printMemory() {
+    printf("Memoria simulada: \n");
+    for (int i = 0; i < MEMORY_SIZE; i++)
     {
-        printf("Nombre: %c, Desde: %d, Hasta: %d\n", temp->name, temp->address, temp->address + temp->size);
-        temp = temp->next;
+        printf("%d: %c\n", i, simulatedMemory[i]);
     }
+    printf("\n");
 }

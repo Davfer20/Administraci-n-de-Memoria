@@ -84,31 +84,43 @@ int main(int argc)
   // Create global lists
   createList(&assignedList);
   createList(&unassignedList);
+  startMemory();
+  addValue(unassignedList, '0', 0, MEMORY_SIZE);
 
   allocateMemory('A', 10);
-  allocateMemory('B', 20);
+  allocateMemory('B', 40);
   allocateMemory('C', 30);
-  allocateMemory('D', 40);
-  allocateMemory('E', 100);
+  allocateMemory('D', 20);
+  allocateMemory('E', 25);
+  allocateMemory('F', 35);
+  allocateMemory('G', 40);
 
+  //printMemory();
   freeMemory('D');
+  //printMemory();
   freeMemory('B');
-
-  printf("Assigned list:\n");
-  printList(assignedList);
-
-  printf("Unasinged  list:\n");
+  freeMemory('C');
+  printf("Unassigned list:\n");
 
   printList(unassignedList);
+  
+  
+  // printMemory();
+  // printf("Assigned list:\n");
+  // printList(assignedList);
 
-  allocateMemory('G', 20);
+  // printf("Unassigned list:\n");
 
-  printf("Assigned list:\n");
-  printList(assignedList);
+  // printList(unassignedList);
 
-  printf("Unasinged  list:\n");
+  // allocateMemory('G', 20);
 
-  printList(unassignedList);
+  // printf("Assigned list:\n");
+  // printList(assignedList);
+
+  // printf("Unassigned list:\n");
+
+  // printList(unassignedList);
 
   // readLinesFromFile("comands.txt");
   return 0;
