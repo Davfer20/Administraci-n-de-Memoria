@@ -8,7 +8,8 @@ void processLine(const char *line)
 {
   char command[10]; // Buffer para almacenar el comando
   char name;        // Variable para el nombre (carácter)
-  size_t size;      // Variable para el tamaño
+
+  size_t size; // Variable para el tamaño
 
   // Parse the line (con ALLOC, MALLOC, REALLOC)
   if (sscanf(line, "%s %c %zu", command, &name, &size) == 3) // Usa &name para pasar la dirección de name
@@ -91,36 +92,21 @@ int main(int argc)
   allocateMemory('B', 40);
   allocateMemory('C', 30);
   allocateMemory('D', 20);
-  allocateMemory('E', 25);
-  allocateMemory('F', 35);
+  allocateMemory('E', 20);
+  allocateMemory('F', 50);
   allocateMemory('G', 40);
+  allocateMemory('H', 60);
+  allocateMemory('I', 20);
 
-  //printMemory();
-  freeMemory('D');
-  //printMemory();
-  freeMemory('B');
   freeMemory('C');
+  freeMemory('E');
+  reallocateMemory('D', 300);
+
+  printf("Assigned list:\n");
+  printList(assignedList);
+
   printf("Unassigned list:\n");
-
   printList(unassignedList);
-  
-  
-  // printMemory();
-  // printf("Assigned list:\n");
-  // printList(assignedList);
-
-  // printf("Unassigned list:\n");
-
-  // printList(unassignedList);
-
-  // allocateMemory('G', 20);
-
-  // printf("Assigned list:\n");
-  // printList(assignedList);
-
-  // printf("Unassigned list:\n");
-
-  // printList(unassignedList);
 
   // readLinesFromFile("comands.txt");
   return 0;
