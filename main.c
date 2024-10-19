@@ -38,8 +38,9 @@ void processLine(const char *line)
     printf("Lista de memoria no asignada o huecos:\n");
     printList(unassignedList);
     printMemory();
-    // printMemory();  
-  } else if (strcmp(command, "RESET") == 0)
+    // printMemory();
+  }
+  else if (strcmp(command, "RESET") == 0)
   {
     reset();
   }
@@ -49,7 +50,7 @@ void processLine(const char *line)
   }
 }
 
-// Function to read lines from a file
+// Funcion para leer las lineas del archivo
 void readLinesFromFile(const char *filename)
 {
   FILE *file = fopen(filename, "r");
@@ -67,7 +68,8 @@ void readLinesFromFile(const char *filename)
     if (line[0] == '#' || line[0] == '\n')
     {
       continue; // Ignorar comentarios
-    } else if (line[0] == '+')
+    }
+    else if (line[0] == '+')
     {
       printf("\n%s", line);
       continue; // Ignorar líneas en blanco
@@ -86,7 +88,6 @@ int main(int argc)
   createList(&unassignedList);
   startMemory();
   addValue(unassignedList, '0', 0, MEMORY_SIZE);
-
 
   readLinesFromFile("pruebas.txt");
   return 0;

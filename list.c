@@ -80,8 +80,6 @@ static struct Node *createNode(char name, int address, int size)
     return newNode;
 }
 
-
-
 // Función para dividir la lista en dos mitades. Esto se usa en el mergeSort
 struct Node *split(struct Node *head)
 {
@@ -146,12 +144,14 @@ static int compareNodesMerge(struct List *list, struct Node *node1, struct Node 
     }
 }
 
-static int compareNodes(struct List* list, struct Node *node1, struct Node *node2)
+static int compareNodes(struct List *list, struct Node *node1, struct Node *node2)
 {
     if (list == assignedList)
     {
         return node1->address > node2->address;
-    } else {
+    }
+    else
+    {
         switch (SORTING_ALGORITHM)
         {
         case 1: // First Fit
@@ -167,7 +167,6 @@ static int compareNodes(struct List* list, struct Node *node1, struct Node *node
             break;
         }
     }
-    
 }
 
 // Función para fusionar dos listas
@@ -264,7 +263,9 @@ static struct Node *addValue(struct List *list, char name, int address, int size
                 }
                 temp->prev = newNode;
                 break;
-            } else {
+            }
+            else
+            {
                 temp = temp->next;
             }
         }
@@ -297,7 +298,7 @@ static void deleteNode(struct List *list, struct Node *nodeToDelete)
             list->tail = NULL;
         }
         list->head = nodeToDelete->next; // Se actualiza la cabeza
-        
+
         // Si la lista no está vacía, se actualiza el puntero previo de la nueva cabeza
         if (list->head != NULL)
         {
@@ -349,9 +350,9 @@ static signed int findHole(char name, int size)
     }
 
     addValue(assignedList, name, holeNode->address, size); // Se añade el valor a la lista de asignados
-    int address = holeNode->address; // Se guarda la dirección del nodo
-    holeNode->address += size; // Se actualiza la dirección del hueco
-    holeNode->size -= size; // Se actualiza el tamaño del hueco
+    int address = holeNode->address;                       // Se guarda la dirección del nodo
+    holeNode->address += size;                             // Se actualiza la dirección del hueco
+    holeNode->size -= size;                                // Se actualiza el tamaño del hueco
 
     if (holeNode->size == 0)
     {
@@ -415,7 +416,7 @@ static void mergeMemory(struct Node *current)
         deleteNode(unassignedList, current);
     } // Si solo hay un hueco después
     else if (afterHoleNode != NULL)
-    { 
+    {
         // Se elimina el nodo después y se suma su tamaño al hueco actual
         current->size = current->size + afterHoleNode->size;
         deleteNode(unassignedList, afterHoleNode);
@@ -470,30 +471,32 @@ static void reallocateMemory(char name, int newSize)
                     {
                         // Si hay un hueco después, se le añade el tamaño restante
                         int remainderSize = current->size - newSize;
-                        current->size = newSize; // Se actualiza el tamaño
-                        unassignedNode->size += remainderSize; // Se actualiza el tamaño del hueco
-                        unassignedNode->address -= remainderSize; // Se actualiza la dirección del hueco
+                        current->size = newSize;                                         // Se actualiza el tamaño
+                        unassignedNode->size += remainderSize;                           // Se actualiza el tamaño del hueco
+                        unassignedNode->address -= remainderSize;                        // Se actualiza la dirección del hueco
                         freeNodeMemory(unassignedNode, current->size, current->address); // Se llama a esta función para escribir '0' en la memoria
-                        for (int i = 0; i < current->size; i++) // Se escribe en la memoria
+                        for (int i = 0; i < current->size; i++)                          // Se escribe en la memoria
                         {
                             simulatedMemory[current->address + i] = current->name;
                         }
                         return;
-                    } else {
+                    }
+                    else
+                    {
                         unassignedNode = unassignedNode->prev;
                     }
                 }
                 // Si no hay hueco después del nodo asignado
                 if (unassignedNode == NULL)
                 {
-                    // Se añade un hueco después del nodo asignado	
+                    // Se añade un hueco después del nodo asignado
                     addValue(unassignedList, '0', current->address + newSize, current->size - newSize);
                     // Se escribe '0' en la memoria
                     for (int i = 0; i < current->size - newSize; i++)
                     {
                         simulatedMemory[current->address + newSize + i] = '0';
                     }
-                    current->size = newSize; // Se actualiza el tamaño
+                    current->size = newSize;                // Se actualiza el tamaño
                     for (int i = 0; i < current->size; i++) // Se escribe en la memoria
                     {
                         simulatedMemory[current->address + i] = current->name;
@@ -503,7 +506,7 @@ static void reallocateMemory(char name, int newSize)
                 }
             }
             // Se va a buscar si hay un hueco antes y después del nodo asignado
-            struct Node *beforeHoleNode = NULL; // Hueco que está antes del hueco actual
+            struct Node *beforeHoleNode = NULL;                 // Hueco que está antes del hueco actual
             struct Node *unassignedNode = unassignedList->tail; // Hueco actual
             beforeHoleNode = unassignedNode->prev;
             while (unassignedNode != NULL)
@@ -512,14 +515,14 @@ static void reallocateMemory(char name, int newSize)
                 // 2. Hay un hueco después de la asignación del cual se le puede asignar más memoria
                 if (unassignedNode->address == (current->address + current->size) && newSize <= (unassignedNode->size + current->size))
                 {
-                    int remainderSize = newSize - current->size; 
-                    current->size = newSize; // Se actualiza el tamaño
-                    unassignedNode->size -= remainderSize; // Se actualiza el tamaño del hueco
-                    unassignedNode->address += remainderSize; // Se actualiza la dirección del hueco
+                    int remainderSize = newSize - current->size;
+                    current->size = newSize;                                         // Se actualiza el tamaño
+                    unassignedNode->size -= remainderSize;                           // Se actualiza el tamaño del hueco
+                    unassignedNode->address += remainderSize;                        // Se actualiza la dirección del hueco
                     freeNodeMemory(unassignedNode, current->size, current->address); // Se escribe un 0 en la memoria
                     for (int i = 0; i < remainderSize; i++)
                     {
-                        simulatedMemory[current->address+newSize - i] = current->name;
+                        simulatedMemory[current->address + newSize - i] = current->name;
                     }
                     return;
 
@@ -564,7 +567,9 @@ static void reallocateMemory(char name, int newSize)
                     {
                         deleteNode(unassignedList, unassignedNode);
                         mergeMemory(unassignedNode);
-                    } else { // Limpiar la memoria del bloque anterior
+                    }
+                    else
+                    { // Limpiar la memoria del bloque anterior
                         for (int i = 0; i < unassignedNode->size; i++)
                         {
                             simulatedMemory[unassignedNode->address + i] = '0';
@@ -589,21 +594,25 @@ static void reallocateMemory(char name, int newSize)
                             simulatedMemory[current->address + i] = '0';
                         }
                         struct Node *newUnassignedNode = addValue(unassignedList, '0', current->address, current->size); // Se añade un hueco donde está el nodo actual
-                        mergeMemory(newUnassignedNode); // Se fusiona la memoria
-                        deleteNode(assignedList, current); // Eliminar de la lista de asignados, ya que se insertó en la nueva posición
-                        
+                        mergeMemory(newUnassignedNode);                                                                  // Se fusiona la memoria
+                        deleteNode(assignedList, current);                                                               // Eliminar de la lista de asignados, ya que se insertó en la nueva posición
+
                         for (int i = 0; i < newSize; i++)
                         { // Se escribe en la memoria el nuevo valor
                             simulatedMemory[newAddress + i] = current->name;
                         }
                         printf("Memoria reasignada para %c.\n", current->name);
                         return;
-                    } else {
+                    }
+                    else
+                    {
                         // 6. En ningún lado de la memoria hay suficiente espacio, da error.
                         printf("Error: No hay espacio suficiente para reasignar %c.\n", current->name);
                         return;
                     }
-                } else {
+                }
+                else
+                {
                     unassignedNode = unassignedNode->prev;
                     if (beforeHoleNode != NULL)
                     {
@@ -625,7 +634,7 @@ static void freeMemory(char name)
         if (current->name == name)
         {
             struct Node *newUnassignedNode = addValue(unassignedList, '0', current->address, current->size); // Se añade un hueco
-            mergeMemory(newUnassignedNode); // Se fusiona la memoria
+            mergeMemory(newUnassignedNode);                                                                  // Se fusiona la memoria
             printf("Memoria liberada para %c.\n", current->name);
             for (int i = 0; i < current->size; i++)
             {
@@ -645,29 +654,38 @@ static void freeMemory(char name)
 static void printMemory()
 {
     printf("Memoria simulada:\n");
+
+    // Buffer para almacenar hasta 100 caracteres
+    char buffer[101]; // 100 caracteres + 1 para el terminador nulo
+    int bufferIndex = 0;
+
     for (int i = 0; i < MEMORY_SIZE; i++)
     {
-        // Print the index and character in the same line
-        printf("%d: %c ", i, simulatedMemory[i]);
+        // Concatenar el carácter actual al buffer
+        buffer[bufferIndex++] = simulatedMemory[i];
 
-        // After printing 100 characters, print a new line
-        if ((i + 1) % 100 == 0)
+        // Cuando el buffer tiene 100 caracteres, lo imprimimos como string
+        if (bufferIndex == 100)
         {
-            printf("\n");
+            buffer[bufferIndex] = '\0'; // Asegurar el terminador nulo
+            printf("%s\n", buffer);     // Imprimir el buffer como cadena
+            bufferIndex = 0;            // Reiniciar el índice del buffer
         }
     }
 
-    // Add a new line at the end if MEMORY_SIZE is not a multiple of 100
-    if (MEMORY_SIZE % 100 != 0)
+    // Si quedan caracteres en el buffer al final, imprimirlos
+    if (bufferIndex > 0)
     {
-        printf("\n");
+        buffer[bufferIndex] = '\0'; // Asegurar el terminador nulo
+        printf("%s\n", buffer);     // Imprimir el buffer restante
     }
 }
 
-
-static void reset(){
+// Función para reiniciar la memoria
+static void reset()
+{
     unassignedList = createList(&unassignedList);
     assignedList = createList(&assignedList);
-    startMemory();    
+    startMemory();
     addValue(unassignedList, '0', 0, MEMORY_SIZE);
 }
