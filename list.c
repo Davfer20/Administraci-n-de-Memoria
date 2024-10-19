@@ -80,6 +80,8 @@ static struct Node *createNode(char name, int address, int size)
     return newNode;
 }
 
+
+
 // Función para dividir la lista en dos mitades. Esto se usa en el mergeSort
 struct Node *split(struct Node *head)
 {
@@ -99,50 +101,50 @@ struct Node *split(struct Node *head)
     return second_half;
 }
 
-// // Función para comparar dos nodos y verificar cuál debería ir antes en la lista
-// static int compareNodes(struct List *list, struct Node *node1, struct Node *node2)
-// {
-//     if (list == assignedList)
-//     {
-//         // Compare addresses
-//         if (node1->address < node2->address)
-//             return -1;
-//         else if (node1->address > node2->address)
-//             return 1;
-//         else
-//             return 0;
-//     }
-//     else
-//     {
-//         // Sorting algorithm based on sorting type
-//         switch (SORTING_ALGORITHM)
-//         {
-//         case 1: // First Fit
-//             if (node1->address < node2->address)
-//                 return -1;
-//             else if (node1->address > node2->address)
-//                 return 1;
-//             else
-//                 return 0;
-//         case 2: // Best Fit
-//             if (node1->size < node2->size)
-//                 return -1;
-//             else if (node1->size > node2->size)
-//                 return 1;
-//             else
-//                 return 0;
-//         case 3: // Worst Fit
-//             if (node1->size > node2->size)
-//                 return -1;
-//             else if (node1->size < node2->size)
-//                 return 1;
-//             else
-//                 return 0;
-//         default:
-//             return 0;
-//         }
-//     }
-// }
+// Función para comparar dos nodos y verificar cuál debería ir antes en la lista
+static int compareNodesMerge(struct List *list, struct Node *node1, struct Node *node2)
+{
+    if (list == assignedList)
+    {
+        // Compare addresses
+        if (node1->address < node2->address)
+            return -1;
+        else if (node1->address > node2->address)
+            return 1;
+        else
+            return 0;
+    }
+    else
+    {
+        // Sorting algorithm based on sorting type
+        switch (SORTING_ALGORITHM)
+        {
+        case 1: // First Fit
+            if (node1->address < node2->address)
+                return -1;
+            else if (node1->address > node2->address)
+                return 1;
+            else
+                return 0;
+        case 2: // Best Fit
+            if (node1->size < node2->size)
+                return -1;
+            else if (node1->size > node2->size)
+                return 1;
+            else
+                return 0;
+        case 3: // Worst Fit
+            if (node1->size > node2->size)
+                return -1;
+            else if (node1->size < node2->size)
+                return 1;
+            else
+                return 0;
+        default:
+            return 0;
+        }
+    }
+}
 
 static int compareNodes(struct List* list, struct Node *node1, struct Node *node2)
 {
@@ -180,7 +182,7 @@ struct Node *merge(struct List *list, struct Node *first, struct Node *second)
         return first;
 
     // Se comparan los nodos y se fusionan en orden
-    if (compareNodes(list, first, second) <= 0)
+    if (compareNodesMerge(list, first, second) <= 0)
     {
         first->next = merge(list, first->next, second);
         if (first->next)
@@ -246,9 +248,9 @@ static struct Node *addValue(struct List *list, char name, int address, int size
     {
         // Se recorre la lista para insertar el nodo con base en el ordenamiento
         struct Node *temp = list->head;
-        while (temp->next != NULL)
+        while (temp != NULL)
         {
-            if (compareNodes(list, newNode, temp))
+            if (compareNodes(list, temp, newNode) == 1)
             { // Si el nodo debe ir antes que el nodo actual
                 newNode->next = temp;
                 newNode->prev = temp->prev;
@@ -266,10 +268,10 @@ static struct Node *addValue(struct List *list, char name, int address, int size
                 temp = temp->next;
             }
         }
-        if (temp->next == NULL)
+        if (temp == NULL)
         { // Si el nodo debe ir al final de la lista
-            temp->next = newNode;
-            newNode->prev = temp;
+            newNode->prev = list->tail;
+            list->tail->next = newNode;
             list->tail = newNode;
         }
     }
@@ -289,8 +291,13 @@ static void deleteNode(struct List *list, struct Node *nodeToDelete)
     // Si el nodo es la cabeza
     if (nodeToDelete == list->head)
     {
+        // Si la lista solo tiene un nodo
+        if (list->tail == list->head)
+        {
+            list->tail = NULL;
+        }
         list->head = nodeToDelete->next; // Se actualiza la cabeza
-
+        
         // Si la lista no está vacía, se actualiza el puntero previo de la nueva cabeza
         if (list->head != NULL)
         {
@@ -298,7 +305,7 @@ static void deleteNode(struct List *list, struct Node *nodeToDelete)
         }
     }
     // Si el nodo es la cola
-    if (nodeToDelete == list->tail)
+    else if (nodeToDelete == list->tail)
     {
         list->tail = nodeToDelete->prev; // Update the tail
         if (list->tail != NULL)
@@ -420,6 +427,7 @@ static void mergeMemory(struct Node *current)
         beforeHoleNode->size = current->size + beforeHoleNode->size;
         deleteNode(unassignedList, current);
     }
+    sortList(unassignedList); // Se ordena la lista
 }
 
 // Función para eliminar nodos no asignados y escribir '0' en la memoria
@@ -480,10 +488,12 @@ static void reallocateMemory(char name, int newSize)
                 {
                     // Se añade un hueco después del nodo asignado	
                     addValue(unassignedList, '0', current->address + newSize, current->size - newSize);
+                    // Se escribe '0' en la memoria
+                    for (int i = 0; i < current->size - newSize; i++)
+                    {
+                        simulatedMemory[current->address + newSize + i] = '0';
+                    }
                     current->size = newSize; // Se actualiza el tamaño
-
-                    // Se llama a esta función para escribir '0' en la memoria
-                    freeNodeMemory(unassignedNode, current->size, current->address);
                     for (int i = 0; i < current->size; i++) // Se escribe en la memoria
                     {
                         simulatedMemory[current->address + i] = current->name;
@@ -514,15 +524,15 @@ static void reallocateMemory(char name, int newSize)
                     return;
 
                 } // 3. Hay un hueco antes de la asignación del cual se le puede asignar más memoria
-                else if (current->address == (unassignedNode->address + unassignedNode->size) && newSize <= (unassignedNode->size + current->size))
+                else if (beforeHoleNode != NULL && ((current->address == (beforeHoleNode->address + beforeHoleNode->size)) && newSize <= (beforeHoleNode->size + current->size)))
                 {
 
                     int remainderSize = newSize - current->size;
                     current->size = newSize;
                     current->address -= remainderSize;
 
-                    unassignedNode->size -= remainderSize;
-                    freeNodeMemory(unassignedNode, current->size, current->address); // Function to free memory and merge
+                    beforeHoleNode->size -= remainderSize;
+                    freeNodeMemory(beforeHoleNode, current->size, current->address); // Function to free memory and merge
                     for (int i = 0; i < current->size; i++)
                     {
                         simulatedMemory[current->address + i] = current->name;
@@ -568,7 +578,7 @@ static void reallocateMemory(char name, int newSize)
                     printf("Memoria reasignada para %c.\n", current->name);
                     return;
                 } // 5. El espacio alrededor del nodo asignado no es suficiente para la reasignación, entonces se tiene que mover a otro lado.
-                else if ((unassignedNode->address == (current->address + current->size)) || (current->address == (beforeHoleNode->address + beforeHoleNode->size)))
+                else if ((unassignedNode->address == (current->address + current->size)) || (beforeHoleNode != NULL && (current->address == (beforeHoleNode->address + beforeHoleNode->size))))
                 {
                     // Se busca un hueco donde quepa el nuevo tamaño
                     int newAddress = findHole(current->name, newSize);
@@ -634,10 +644,30 @@ static void freeMemory(char name)
 // Se imprime la memoria
 static void printMemory()
 {
-    printf("Memoria simulada: \n");
+    printf("Memoria simulada:\n");
     for (int i = 0; i < MEMORY_SIZE; i++)
     {
-        printf("%d: %c\n", i, simulatedMemory[i]);
+        // Print the index and character in the same line
+        printf("%d: %c ", i, simulatedMemory[i]);
+
+        // After printing 100 characters, print a new line
+        if ((i + 1) % 100 == 0)
+        {
+            printf("\n");
+        }
     }
-    printf("\n");
+
+    // Add a new line at the end if MEMORY_SIZE is not a multiple of 100
+    if (MEMORY_SIZE % 100 != 0)
+    {
+        printf("\n");
+    }
+}
+
+
+static void reset(){
+    unassignedList = createList(&unassignedList);
+    assignedList = createList(&assignedList);
+    startMemory();    
+    addValue(unassignedList, '0', 0, MEMORY_SIZE);
 }
