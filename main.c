@@ -80,8 +80,13 @@ void readLinesFromFile(const char *filename)
   fclose(file); // Cerrar el archivo
 }
 
-int main(int argc)
+int main(int argc, char *argv[])
 {
+  if (argc < 2)
+  {
+    printf("Uso: %s <nombre del archivo>\n", argv[0]);
+    return 1;
+  }
 
   // Crear las listas globales
   createList(&assignedList);
@@ -89,6 +94,7 @@ int main(int argc)
   startMemory();
   addValue(unassignedList, '0', 0, MEMORY_SIZE);
 
-  readLinesFromFile("pruebas.txt");
+  readLinesFromFile(argv[1]);
+
   return 0;
 }

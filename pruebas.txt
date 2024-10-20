@@ -1,11 +1,11 @@
 # Ejemplos de la tarea
-+ Simulación de fragmentación
++ Simulacion de fragmentacion
 ALLOC A 100
 ALLOC B 200
 FREE A
 ALLOC C 50
 PRINT
-+ Simulación de fuga de memoria
++ Simulacion de fuga de memoria
 ALLOC D 300
 ALLOC E 400
 + No liberamos D
@@ -14,7 +14,7 @@ PRINT
 RESET
 
 + Ejemplo de merge memory
-+ Hay un hueco antes y después de
++ Hay un hueco antes y despues de
 + un espacio de memoria que se libera
 ALLOC A 10
 ALLOC B 40

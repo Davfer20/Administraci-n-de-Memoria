@@ -1,10 +1,10 @@
-# Administraci-n-de-Memoria
+# Administracion-de-Memoria
 
 Este programa simula la gestión dinámica de memoria en C utilizando las funciones malloc, calloc, realloc y free, a partir de un archivo de entrada que contiene una secuencia de operaciones.
 
 Compilar el programa: "gcc main.c -o main"
 
-Ejecutar el programa: "./main"
+Ejecutar el programa: "./main <pruebas.txt>"
 
 La implementación mantiene dos listas: la lista de procesos activos, que incluye las direcciones de memoria y los tamaños de todos los procesos en uso, y la lista de memoria libre, que muestra las direcciones de memoria disponibles y sus respectivos tamaños.
 
@@ -18,4 +18,4 @@ REALLOC A 40
 FREE B  
 PRINT
 
-Al ejecutar el comando PRINT, el programa mostrará detalladamente la lista de procesos asignados, la lista de memoria libre y una representación visual del estado actual de la memoria. Esta funcionalidad proporciona una herramienta útil para comprender cómo se gestionan las operaciones de memoria en un sistema operativo, así como para simular y probar escenarios de uso de memoria en aplicaciones reales.
+Al ejecutar el comando PRINT, el programa mostrara detalladamente la lista de procesos asignados, la lista de memoria libre y una representación visual del estado actual de la memoria. Ademas existe una funcion llamada Restore al cual tiene la funcionalidad de restablecer la memoria con el fin de realizar varias pruebas en una sola ejecucion. Esta funcionalidad proporciona una herramienta útil para comprender cómo se gestionan las operaciones de memoria en un sistema operativo, así como para simular y probar escenarios de uso de memoria en aplicaciones reales.

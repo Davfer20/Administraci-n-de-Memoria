@@ -467,13 +467,14 @@ static void reallocateMemory(char name, int newSize)
                 struct Node *unassignedNode = unassignedList->tail;
                 while (unassignedNode != NULL) // Se busca si hay un hueco después del nodo asignado
                 {
-                    if (unassignedNode->address == (current->address + newSize))
+                    if (unassignedNode->address == (current->address + current->size))
                     {
                         // Si hay un hueco después, se le añade el tamaño restante
                         int remainderSize = current->size - newSize;
-                        current->size = newSize;                                         // Se actualiza el tamaño
-                        unassignedNode->size += remainderSize;                           // Se actualiza el tamaño del hueco
-                        unassignedNode->address -= remainderSize;                        // Se actualiza la dirección del hueco
+                        current->size = newSize;                  // Se actualiza el tamaño
+                        unassignedNode->size += remainderSize;    // Se actualiza el tamaño del hueco
+                        unassignedNode->address -= remainderSize; // Se actualiza la dirección del hueco
+                        // mergeMemory(unassignedNode);                                     // Se fusiona la memoria
                         freeNodeMemory(unassignedNode, current->size, current->address); // Se llama a esta función para escribir '0' en la memoria
                         for (int i = 0; i < current->size; i++)                          // Se escribe en la memoria
                         {
