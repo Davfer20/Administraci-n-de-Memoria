@@ -1,10 +1,16 @@
 # Administracion-de-Memoria
-
+## Diego Granados
+## Daniel Granados
+## David Fernández
 Este programa simula la gestión dinámica de memoria en C utilizando las funciones malloc, calloc, realloc y free, a partir de un archivo de entrada que contiene una secuencia de operaciones.
 
 Compilar el programa: "gcc main.c -o main"
 
 Ejecutar el programa: "./main <pruebas.txt>"
+
+Si se desea cambiar el algoritmo de asignación de memoria, se debe cambiar en el archivo de list.c la constante de SORTING_ALGORITHM. 1 es para First Fit, 2 para Best Fit y 3 para Worst Fit.
+
+Si se desea cambiar la cantidad de espacio en la memoria, en el archivo de list.c se debe cambiar la constante de MEMORY_SIZE.
 
 La implementación mantiene dos listas: la lista de procesos activos, que incluye las direcciones de memoria y los tamaños de todos los procesos en uso, y la lista de memoria libre, que muestra las direcciones de memoria disponibles y sus respectivos tamaños.
 

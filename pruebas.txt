@@ -59,8 +59,7 @@ RESET
 #Nombre: H, Desde: 210, Hasta: 270
 #Nombre: I, Desde: 270, Hasta: 290
 #Unassigned list:
-#Nombre: 0, Desde: 30, Hasta: 50
-#Nombre: 0, Desde: 50, Hasta: 80
+#Nombre: 0, Desde: 30, Hasta: 80
 #Nombre: 0, Desde: 100, Hasta: 120
 #Nombre: 0, Desde: 290, Hasta: 1000
 #-------------------------
